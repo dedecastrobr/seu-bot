@@ -2,20 +2,22 @@ import sys
 import pygame
 from pygame.locals import QUIT
 from seubot import SeuBot
+from utils import config, Logger
+
+logger = Logger(config.get("bot_logfile"))
 
 def main():
-    print("Initializing SeuBot..")
-    seubot = SeuBot("Ana Bot")
-    print("Waiting for joystick commands!")
+    logger.info("Initializing SeuBot..")
+    seubot = SeuBot()
     done = False
     while not done:
         for event in pygame.event.get():
             if event.type == QUIT:
                 done = True
-        seubot.are_you_leaving()
+        seubot.gamepad.check_connection()
         seubot.what_todo()
 
-    print("I hope to see you soon! Bye!")
+    logger.info("I hope to see you soon! Bye!")
     pygame.quit()
     sys.exit()
 

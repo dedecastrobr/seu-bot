@@ -1,5 +1,8 @@
 import pygame
 from enum import IntEnum
+from gpiozero import LED
+
+controller_led = LED(27)
 
 class ControllerButtons(IntEnum):
     Y = 0
@@ -23,9 +26,22 @@ class ControllerAnalogs(IntEnum):
     R3Y = 3
 
 class Controller:
-    def __init__( self, joy_index=0 ): 
+    def __init__( self ): 
         pygame.joystick.init()
-        self.joystick = pygame.joystick.Joystick( joy_index )
+        self.joystick = None
+        self.connected = False
+
+    def check_connection(self):
+        if pygame.joystick.get_count() > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
+            self.connected = True
+            controller_led.on()
+        else:
+            self.joystick = None
+            self.connected = False
+            controller_led.off()
+            print("DISC")
 
     def getAxisState(self, axis):
         return self.joystick.get_axis(axis)

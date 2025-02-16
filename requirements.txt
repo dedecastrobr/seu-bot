@@ -1,2 +1,6 @@
 pygame
 names
+gpiozero
+uvicorn
+fastapi
+pydantic
