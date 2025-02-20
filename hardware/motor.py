@@ -2,7 +2,6 @@ from time import sleep
 from gpiozero import Motor
 from utils import config, Logger
 from commands import Command, CommandState, CommandManager
-from hardware.controller import ControllerButtons, ControllerHats, ControllerAnalogs
 
 
 logger = Logger("bot_logs")
@@ -22,7 +21,7 @@ class MotorSet:
                                  backward=left_config.get("backward_pin"),
                                  pwm=False)
 
-        self.command_manager = CommandManager(self.gamepad, self.get_available_commands())
+        self.command_manager = CommandManager(self.get_available_commands())
         self.command_handlers = {
             CommandState.FORWARD: self.move_forward,
             CommandState.BACKWARD: self.move_backward,
@@ -35,31 +34,25 @@ class MotorSet:
         return [
             Command(
                 state=CommandState.FORWARD,
-                condition=lambda: self.gamepad.getButtonState(int(ControllerButtons.R2)) == 1
+                condition=lambda: self.gamepad.getButtonState(int(self.gamepad.get_buttons().R2)) == 1
             ),
             Command(
                 state=CommandState.BACKWARD,
-                condition=lambda: self.gamepad.getButtonState(int(ControllerButtons.L2)) == 1
+                condition=lambda: self.gamepad.getButtonState(int(self.gamepad.get_buttons().L2)) == 1
             ),
             Command(
                 state=CommandState.TURN_LEFT,
                 condition=lambda: (
-                    self.gamepad.getAxisState(int(ControllerAnalogs.L3X)) < 0.0 or 
-                    self.gamepad.getHatState(int(ControllerHats.HAT_0))[0] < 0.0
+                    self.gamepad.getAxisState(int(self.gamepad.get_analogs().L3X)) < 0.0 or 
+                    self.gamepad.getHatState(int(self.gamepad.get_hats().HAT_0))[0] < 0.0
                 )
             ),
             Command(
                 state=CommandState.TURN_RIGHT,
                 condition=lambda: (
-                    self.gamepad.getAxisState(int(ControllerAnalogs.L3X)) > 0.005 or 
-                    self.gamepad.getHatState(int(ControllerHats.HAT_0))[0] > 0.0
+                    self.gamepad.getAxisState(int(self.gamepad.get_analogs().L3X)) > 0.005 or 
+                    self.gamepad.getHatState(int(self.gamepad.get_hats().HAT_0))[0] > 0.0
                 )
-            ),
-            Command(
-                state=CommandState.QUIT,
-                    condition=lambda: (
-                        self.gamepad.getButtonState(int(ControllerButtons.R3)) == 1
-                    )
             )
         ]
 
@@ -85,12 +78,10 @@ class MotorSet:
         self.right_motor.backward()
         sleep(0.5)
 
-
     def turn_left(self):
         self.right_motor.forward()
         self.left_motor.backward()
         sleep(0.5)
-
 
     def stop(self):
         self.right_motor.stop()

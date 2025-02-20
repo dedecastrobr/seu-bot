@@ -14,7 +14,6 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 done = True
-        seubot.gamepad.check_connection()
         seubot.what_todo()
 
     logger.info("I hope to see you soon! Bye!")
