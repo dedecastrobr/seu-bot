@@ -1,12 +1,12 @@
 import os
 import sys
-from time import sleep
 import pygame
 from pygame.locals import QUIT
-from hardware import Controller, MotorSet
-from commands import CommandState, CommandManager
+from hardware import Controller, MotorSet, Light
+from commands import Command, CommandState, CommandManager
 from admin import start_web_server
 from utils import config, Logger
+from hardware.controller import ControllerButtons
 
 logger = Logger(config.get("bot_logfile"))
 
@@ -19,20 +19,21 @@ class SeuBot:
         self.gamepad = Controller()
         self.gamepad.check_connection()
 
-        self.motor_set = MotorSet()
+        self.motor_set = MotorSet(self.gamepad)
 
-        self.command_manager = CommandManager(self.gamepad)
+        self.green_light = Light("green_light")
+        self.blue_light = Light("blue_light")
+        self.yellow_light = Light("yellow_light")
+        self.head_lights = Light("head_lights")
+
+        self.command_manager = CommandManager(self.gamepad, self.get_available_commands())
 
         self.command_handlers = {
-            CommandState.FORWARD: self.motor_set.move_forward,
-            CommandState.BACKWARD: self.motor_set.move_backward,
-            CommandState.TURN_LEFT: self.motor_set.turn_left,
-            CommandState.TURN_RIGHT: self.motor_set.turn_right,
-            CommandState.STOP: self.motor_set.stop,
             CommandState.QUIT: self.quit,
-            CommandState.PRESSED_A: start_web_server,
-            CommandState.PRESSED_B: self.restart
-
+            CommandState.PRESSED_A: self.green_light.toggle,
+            CommandState.PRESSED_B: self.blue_light.toggle,
+            CommandState.PRESSED_X: self.yellow_light.toggle,
+            CommandState.PRESSED_Y: self.head_lights.toggle
         }
 
         if config.get("enable_admin"):
@@ -40,12 +41,45 @@ class SeuBot:
 
     def what_todo(self):
         if self.gamepad.connected:
+            self.motor_set.handle_commands()
             active_commands = self.command_manager.get_active_commands()
-            if not active_commands:
-                self.command_handlers[CommandState.STOP]()
-                return
             for command_state in active_commands:
                 self.command_handlers[command_state]()
+
+
+    def get_available_commands(self):
+        return [
+            Command(
+                state=CommandState.QUIT,
+                    condition=lambda: (
+                        self.gamepad.getButtonState(int(ControllerButtons.R3)) == 1
+                    )
+            ),
+            Command(
+                state=CommandState.PRESSED_A,
+                    condition=lambda: (
+                        self.gamepad.getButtonState(int(ControllerButtons.A)) == 1
+                    )
+            ),
+            Command(
+                state=CommandState.PRESSED_B,
+                    condition=lambda: (
+                        self.gamepad.getButtonState(int(ControllerButtons.B)) == 1
+                    )
+            ),
+            Command(
+                state=CommandState.PRESSED_X,
+                    condition=lambda: (
+                        self.gamepad.getButtonState(int(ControllerButtons.X)) == 1
+                    )
+            ),
+            Command(
+                state=CommandState.PRESSED_Y,
+                    condition=lambda: (
+                        self.gamepad.getButtonState(int(ControllerButtons.Y)) == 1
+                    )
+            )
+        ]
 
     def check_controller(self):
         if not self.gamepad.connected:

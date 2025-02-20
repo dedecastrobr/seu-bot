@@ -1,6 +1,9 @@
 
 from gpiozero import LED
-from utils import config
+from utils import config, Logger
+from time import sleep
+
+logger = Logger(config.get("bot_logfile"))
 
 class Light:
 
@@ -11,6 +14,7 @@ class Light:
 
     def toggle(self):
         self.light.toggle()
+        sleep(0.5)
 
     def on(self):
         self.light.off()
