@@ -1,30 +1,34 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from utils import config
+from utils import get_config
 
 class Logger:
 
     def __init__(self, name):
-        
-        log_directory = config.get("logs_folder")
-        os.makedirs(log_directory, exist_ok=True)
+        try:
+            self.config = get_config()
+            log_directory = self.config.get("logs_folder")
+            os.makedirs(log_directory, exist_ok=True)
 
-        self.logger = logging.getLogger(name)
-        if not self.logger.handlers:
-            self.logger.setLevel(logging.INFO)
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+            self.logger = logging.getLogger(name)
+            if not self.logger.handlers:
+                self.logger.setLevel(logging.INFO)
+                formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-            # Create the log file inside /logs
-            log_file_path = os.path.join(log_directory, f"{name}.log")
-            file_handler = RotatingFileHandler(log_file_path, maxBytes=1000000)
-            file_handler.setFormatter(formatter)
+                log_file_path = os.path.join(log_directory, f"{name}.log")
+                file_handler = RotatingFileHandler(log_file_path, maxBytes=1000000)
+                file_handler.setFormatter(formatter)
 
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(formatter)
+                console_handler = logging.StreamHandler()
+                console_handler.setFormatter(formatter)
 
-            self.logger.addHandler(file_handler)
-            self.logger.addHandler(console_handler)
+                self.logger.addHandler(file_handler)
+                self.logger.addHandler(console_handler)
+        except KeyError as e:
+            raise RuntimeError(f"Configuration error: {e}") from e
+        except Exception as e:
+            raise RuntimeError(f"Error initializing logger: {e}") from e
 
     def debug(self, message):
         self.logger.debug(message)
