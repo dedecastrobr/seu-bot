@@ -1,8 +1,8 @@
-# Seu Bot
+# 🤖 Seu Bot
 
 Welcome to the Seu Bot project! This is a Python-based robot project designed to run on a Raspberry Pi. Seu Bot can control 5V motors and LEDs, making it a great platform for learning about robotics, GPIO programming, and Python development.
 
-## Dependencies
+## 📦 Dependencies
 
 To get started with Seu Bot, you'll need to install the following dependencies on your Raspberry Pi:
 
@@ -12,7 +12,7 @@ sudo apt-get install python3 python3-pip python3-venv libsdl2-2.0-0 libsdl2-dev 
 
 These dependencies include Python 3, pip, virtual environment tools, and various SDL2 libraries required for handling multimedia and graphics.
 
-## Environment
+## 🌐 Environment
 
 Set up a virtual environment to manage your project's dependencies:
 
@@ -23,7 +23,7 @@ source seubot-env/bin/activate
 
 This will create and activate a virtual environment named `seubot-env`.
 
-## Install
+## 📥 Install
 
 Install the required Python packages listed in the `requirements.txt` file:
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 This will ensure that all necessary libraries and dependencies are installed for the project.
 
-## Configuration
+## ⚙️ Configuration
 
 Create a `config.json` file with the following structure to configure your bot:
 
@@ -65,19 +65,23 @@ Create a `config.json` file with the following structure to configure your bot:
 
 This configuration file specifies the GPIO pins used for controlling the motors and LEDs, as well as log file settings.
 
-## Hardware
+## 🔧 Hardware
 
 To build Seu Bot, you'll need the following hardware components:
 
-- Raspberry Pi (any model with GPIO pins)
+- Raspberry Pi (any model with GPIO pins. I'mm running on a `10 years old` Rasp 3 B+)
 - 5V DC motors (2x)
 - Motor driver (e.g., L298N)
 - LEDs (3x: green, blue, red)
-- Resistors (appropriate values for LEDs)
-- Breadboard and jumper wires
-- Power supply for the motors (e.g., 4x AA batteries or a 5V power adapter)
+- Resistors (appropriate values for LEDs. There are kits with dozens. You will need many of them)
+- Transistors (I've used some [IRLZ34N MOSFET](https://www.amazon.de/dp/B0893WBH6H))
+- Breadboard and jumper wires (Simple and cheap as [this ones](https://www.amazon.de/-/en/AUKENIEN-Breadboard-Flexible-U-shaped-Raspberry/dp/B0B2DJCL5P) would do the job)
+- Power supply for the motors (I've used [this battery shields](https://www.amazon.de/dp/B0DF7VP1PP) with the `18650 lit-ion batteries` and also a [`5V power adapters`](https://www.amazon.de/Universal-Multi-Voltage-Adapter-Household-Electronics-black/dp/B0932NCXFQ) for testing)
 
-## SeuBot Admin
+Looks simpler then really is. Trust me. 
+If you are not familiar basics of eletronics, spare some time to research about how to connect all that stuff in the above list. It's not hard, but it takes some time to get into the mood. ;) 
+
+## 🛠️ SeuBot Admin
 
 Seu Bot includes an admin interface that allows you to update the configuration via HTTP requests. To enable the admin interface, set `enable_admin` to `true` in your `config.json` file:
 
@@ -88,11 +92,11 @@ Seu Bot includes an admin interface that allows you to update the configuration 
 }
 ```
 
-Once the admin flag is enabled, SeuBot will start a small websever that can be used for changing the bot config.
+Once the admin flag is enabled, SeuBot will start a small web server that can be used for changing the bot config.
 
 The admin interface will be available at `http://<your-raspberry-pi-ip>:8000`.
 
-### Update Configuration
+### 🔄 Update Configuration
 
 To update the configuration, send a POST request to `http://<your-raspberry-pi-ip>:8000/update-config` with the new configuration in the request body. For example:
 
@@ -125,8 +129,27 @@ curl -X POST "http://<your-raspberry-pi-ip>:8000/update-config" -H "Content-Type
 ```
 
 This will update the configuration and save it to the `config.json` file.
+Notice that the way you define this file you need to implement @SeuBot class accordingly. 
+This example has 2 motors and 3 lights. You can add as much as you want.
 
-## Usage
+## 🛠️ Implementing your own Bot
+
+[`SeuBot`](/seubot/seubot.py) class is in charge to manage the robot. 
+So from there, you will set your controller, setup motors and lights. 
+
+Motors are actually defined as [`MotorSets`](/hardware/motor.py), in order to facilitate its control. So far we have a single MotorSet, but this class can be modified to accommodate as many motors as needed, by creating new sets. It has some default commands on it, but you can change if you want. 
+
+[`Light`](/hardware/light.py) can be either associated to commands or directly manipulated from other events like controller disconnection, battery levels or any other thing.
+
+[`Commands`](/commands/commands.py) is used to manage controller inputs. They can be created "ad-hoc" along the code and are normally associated to a `CommandState`, one controller input (Button, Hat or Analog) and one callable action, usually a method from some hardware component. 
+It means basically, when the `CommandState` is satisfied, the action is called. 
+`Commands` keeps also a `CommandManager` to keep track of the active commands on each iteration and handle it accordingly. This is mostly on the `what_todo()` method from [`SeuBot`](/seubot/seubot.py) class.
+
+[`Controller`](/hardware/controller.py) is pretty straightforward and if you have a regular Bluetooth controller connected to the Raspberry Pi, it should work fine. Besides managing the controller connection it also keeps all hats, buttons and analogs and it's from where you get it when you create `Commands`. 
+
+This `Controller x Commands` logic surely has some room for improvement. It should be revisited at some point for making more simple to use. 
+
+## 🚀 Usage
 
 Once everything is set up, you can run the bot using the following command:
 
@@ -136,10 +159,10 @@ python main.py
 
 This will start the bot and it will begin executing the commands as per your configuration.
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests to improve the project.
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
