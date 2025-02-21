@@ -13,7 +13,7 @@ class CommandState(Enum):
     PRESSED_B = "b_button"
     PRESSED_X = "x_button"
     PRESSED_Y = "y_button"
-    PRESSED_R1 = "R1_button"
+    PRESSED_R1 = "r1_button"
 
 @dataclass
 class Command:

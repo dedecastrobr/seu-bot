@@ -2,8 +2,11 @@ import pygame
 from enum import IntEnum
 
 class Controller:
-    def __init__( self ): 
-        pygame.joystick.init()
+    def __init__(self): 
+        try:
+            pygame.joystick.init()
+        except pygame.error as e:
+            raise RuntimeError("Failed to initialize pygame joystick") from e
         self.joystick = None
         self.connected = False
 

@@ -1,6 +1,6 @@
 from time import sleep
 from gpiozero import Motor
-from utils import config, Logger
+from utils import get_config, Logger
 from commands import Command, CommandState, CommandManager
 
 
@@ -8,27 +8,36 @@ logger = Logger("bot_logs")
 
 class MotorSet:
 
-    def __init__(self, gamepad):
+    def __init__(self, gamepad=None):
 
-        self.gamepad = gamepad
+        try:
+            self.config = get_config()
+            right_config = self.config.get("gpio").get("motors").get("right_motor")
+            self.right_motor = Motor(forward=right_config.get("forward_pin"),
+                                     backward=right_config.get("backward_pin"),
+                                     pwm=False)
+            left_config = self.config.get("gpio").get("motors").get("left_motor")
+            self.left_motor = Motor(forward=left_config.get("forward_pin"),
+                                    backward=left_config.get("backward_pin"),
+                                    pwm=False)
+        except KeyError as e:
+            raise RuntimeError(f"Configuration error: {e}") from e
+        except Exception as e:
+            raise RuntimeError(f"Error initializing motors: {e}") from e
 
-        right_config = config.get("gpio").get("motors").get("right_motor")
-        self.right_motor = Motor(forward=right_config.get("forward_pin"),
-                                 backward=right_config.get("backward_pin"),
-                                 pwm=False)
-        left_config = config.get("gpio").get("motors").get("left_motor")
-        self.left_motor =  Motor(forward=left_config.get("forward_pin"),
-                                 backward=left_config.get("backward_pin"),
-                                 pwm=False)
-
-        self.command_manager = CommandManager(self.get_available_commands())
-        self.command_handlers = {
-            CommandState.FORWARD: self.move_forward,
-            CommandState.BACKWARD: self.move_backward,
-            CommandState.TURN_LEFT: self.turn_left,
-            CommandState.TURN_RIGHT: self.turn_right,
-            CommandState.STOP: self.stop
-        }
+        if gamepad:
+            self.gamepad = gamepad
+            try:
+                self.command_manager = CommandManager(self.get_available_commands())
+                self.command_handlers = {
+                    CommandState.FORWARD: self.move_forward,
+                    CommandState.BACKWARD: self.move_backward,
+                    CommandState.TURN_LEFT: self.turn_left,
+                    CommandState.TURN_RIGHT: self.turn_right,
+                    CommandState.STOP: self.stop
+                }
+            except Exception as e:
+                raise RuntimeError(f"Error initializing gamepad commands for the motors: {e}") from e
 
     def get_available_commands(self):
         return [
@@ -86,5 +95,5 @@ class MotorSet:
     def stop(self):
         self.right_motor.stop()
         self.left_motor.stop()
-           
+
 
