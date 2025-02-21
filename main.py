@@ -2,8 +2,9 @@ import sys
 import pygame
 from pygame.locals import QUIT
 from seubot import SeuBot
-from utils import config, Logger
+from utils import get_config, Logger
 
+config = get_config()
 logger = Logger(config.get("bot_logfile"))
 
 def main():
