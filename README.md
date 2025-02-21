@@ -77,6 +77,55 @@ To build Seu Bot, you'll need the following hardware components:
 - Breadboard and jumper wires
 - Power supply for the motors (e.g., 4x AA batteries or a 5V power adapter)
 
+## SeuBot Admin
+
+Seu Bot includes an admin interface that allows you to update the configuration via HTTP requests. To enable the admin interface, set `enable_admin` to `true` in your `config.json` file:
+
+```json
+{
+    "enable_admin": true,
+    ...
+}
+```
+
+Once the admin flag is enabled, SeuBot will start a small websever that can be used for changing the bot config.
+
+The admin interface will be available at `http://<your-raspberry-pi-ip>:8000`.
+
+### Update Configuration
+
+To update the configuration, send a POST request to `http://<your-raspberry-pi-ip>:8000/update-config` with the new configuration in the request body. For example:
+
+```sh
+curl -X POST "http://<your-raspberry-pi-ip>:8000/update-config" -H "Content-Type: application/json" -d '{
+    "new_config": {
+        "bot_name": "Seu Bot",
+        "bot_logfile": "bot_logs",
+        "enable_admin": true,
+        "admin_logfile": "admin_logs",
+        "gpio": {
+            "motors": {
+                "left_motor": {
+                    "forward_pin": "22",
+                    "backward_pin": "23"
+                },
+                "right_motor": {
+                    "forward_pin": "17",
+                    "backward_pin": "14"
+                }
+            },
+            "lights": {
+                "green_light": "22",
+                "blue_light": "23",
+                "red_light": "17"
+            }
+        }
+    }
+}'
+```
+
+This will update the configuration and save it to the `config.json` file.
+
 ## Usage
 
 Once everything is set up, you can run the bot using the following command:

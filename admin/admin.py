@@ -26,12 +26,6 @@ async def update_config(update: ConfigUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/restart")
-async def restart_system():
-    logger.info("Reboot!")
-    os.system("sudo reboot now")
-    return {"message": "System is restarting..."}
-
 def run_server():
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
