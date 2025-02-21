@@ -13,7 +13,7 @@ class Logger:
 
             self.logger = logging.getLogger(name)
             if not self.logger.handlers:
-                self.logger.setLevel(logging.INFO)
+                self.logger.setLevel(self.config.get("log_level").upper())
                 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
                 log_file_path = os.path.join(log_directory, f"{name}.log")

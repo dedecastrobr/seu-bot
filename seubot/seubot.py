@@ -6,8 +6,9 @@ from pygame.locals import QUIT
 from hardware import Controller, MotorSet, Light
 from commands import Command, CommandState, CommandManager
 from admin import start_web_server
-from utils import config, Logger
+from utils import get_config, Logger
 
+config = get_config()
 logger = Logger(config.get("bot_logfile"))
 
 class SeuBot:
@@ -66,9 +67,9 @@ class SeuBot:
         return [
             Command(
                 state=CommandState.QUIT,
-                    condition=lambda button=self.gamepad.get_buttons().R3: (
-                        self.gamepad.getButtonState(int(button)) == 1
-                    )
+                condition=lambda button=self.gamepad.get_buttons().R3: (
+                    self.gamepad.getButtonState(int(button)) == 1
+                )
             )
         ]
 

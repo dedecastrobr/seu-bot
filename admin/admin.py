@@ -5,10 +5,10 @@ from time import sleep
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from utils import config, save_config, Logger
+from utils import get_config, save_config, Logger
 
 
-logger = Logger(config.get("admin_logfile"))
+logger = Logger(get_config().get("admin_logfile"))
 app = FastAPI()
 
 admin_thread = None
