@@ -7,11 +7,12 @@ logger = Logger(get_config().get("bot_logfile"))
 
 class Light:
 
-    def __init__(self, name, gamepad=None, light_commands=[]):
+    def __init__(self, name, pin, gamepad=None, light_commands=[]):
         self.name = name
         try:
             self.config = get_config()
-            self.pin = self.config['gpio']['lights'][self.name]
+            self.name = name
+            self.pin = pin
             self.light = LED(self.pin)
         except KeyError as e:
             raise RuntimeError(f"Configuration error: {e}") from e

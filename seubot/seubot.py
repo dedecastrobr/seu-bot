@@ -1,11 +1,11 @@
 import os
 import sys
-from time import sleep
+from time import sleep, time
 import pygame
 from pygame.locals import QUIT
 from hardware import Controller, MotorSet, Light
 from commands import Command, CommandState, CommandManager
-from admin import start_web_server
+from admin import start_web_server, is_alive
 from utils import get_config, Logger
 
 
@@ -16,17 +16,17 @@ class SeuBot:
 
     def __init__(self, name=config.get("bot_name")):
         pygame.init()
+
+        lights_config = config.get("gpio").get("service_lights")      
+        self.lights = self.initialize_lights(lights_config)
+        self.lights.get("seubot_green_light").on()
+
         self.name = name
         logger.info(("Hello! My name is " + self.name + ". :)"))
 
         self.gamepad = Controller()
 
         self.motor_set = MotorSet(self.gamepad)
-
-        self.white_light = Light("white_light")
-        self.blue_light = Light("blue_light")
-        self.green_light = Light("green_light")
-        self.yellow_light = Light("yellow_light")
 
         self.command_manager = CommandManager(self.get_available_commands())
         self.command_handlers = {
@@ -35,15 +35,35 @@ class SeuBot:
             CommandState.PRESSED_X: self.light_show_dance
         }
 
+        self.last_health_check = 0
+        self.health_check_interval = 5  # seconds
+
         if config.get("enable_admin"):
             start_web_server()
+            self.check_admin_service()
 
     def what_todo(self):
         if self.gamepad.is_connected():
+            self.lights.get("controller_blue_light").on()
             self.motor_set.handle_commands()
             active_commands = self.command_manager.get_active_commands()
             for command_state in active_commands:
                 self.command_handlers[command_state]()
+        self.check_admin_service()
+
+    def check_admin_service(self):
+        current_time = time()
+        if current_time - self.last_health_check >= self.health_check_interval:
+            try:
+                service_light = self.lights.get("service_yellow_light")
+                admin_status = is_alive()
+                if admin_status:
+                    service_light.on()
+                else:
+                    service_light.off()
+            except Exception as e:
+                logger.error(f"Service health check error: {e}")
+            self.last_health_check = current_time
 
     def get_available_commands(self):
         return [
@@ -66,9 +86,16 @@ class SeuBot:
                 )
             )
         ]
+    
+    def initialize_lights(self, lights_config):
+        lights = {}
+        for light_name, pin in lights_config.items():
+            lights[light_name] = Light(light_name, pin)
+        return lights
 
     def quit(self):
         logger.info(("Quiting!"))
+        self.lights.get("seubot_green_light").off()
         sleep(0.5)
         pygame.event.post(pygame.event.Event(QUIT))
 
@@ -77,66 +104,13 @@ class SeuBot:
         os.execv(sys.executable, ['python'] + sys.argv)
 
     def light_show_wave(self):
-
         for _ in range(3):
-            # Forward wave
-            self.white_light.on()
-            sleep(0.3)
-            self.blue_light.on()
-            sleep(0.3)
-            self.green_light.on()
-            sleep(0.3)
-            self.yellow_light.on()
-            sleep(0.5)
+            for light in self.lights.values():
+                # Forward wave
+                light.on()
+                sleep(0.3)
             
-            # Backward wave
-            self.yellow_light.off()
-            sleep(0.3)
-            self.green_light.off()
-            sleep(0.3)
-            self.blue_light.off()
-            sleep(0.3)
-            self.white_light.off()
-            sleep(0.5)
-
-    def light_show_dance(self):
-
-        # Phase 1: Alternating pairs
-        for _ in range(5):
-            self.white_light.on()
-            self.green_light.on()
-            self.blue_light.off()
-            self.yellow_light.off()
-            sleep(0.2)
-            
-            self.white_light.off()
-            self.green_light.off()
-            self.blue_light.on()
-            self.yellow_light.on()
-            sleep(0.2)
-        
-        # Phase 2: All lights blink together
-        all_lights = [self.white_light, self.blue_light, 
-                    self.green_light, self.yellow_light]
-        
-        for light in all_lights:
-            light.off()
-        
-        for _ in range(4):
-            for light in all_lights:
-                light.toggle()
-            sleep(0.15)
-        
-        # Phase 3: Sequential blinking
-        for light in all_lights:
-            light.off()
-        
-        for light in all_lights:
-            light.blink()
-            sleep(0.3)
-        
-        sleep(1)
-        
-        # Turn everything off at the end
-        for light in all_lights:
-            light.off()
+            for light in self.lights.values():
+                # Forward wave
+                light.off()
+                sleep(0.3)

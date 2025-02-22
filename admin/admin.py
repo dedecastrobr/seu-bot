@@ -26,6 +26,10 @@ async def update_config(update: ConfigUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 def run_server():
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
@@ -41,3 +45,6 @@ def start_web_server():
     admin_thread = threading.Thread(target=run_server, daemon=True)
     admin_thread.start()
     sleep(1)
+
+def is_alive():
+    return admin_thread and admin_thread.is_alive()
