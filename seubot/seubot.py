@@ -31,8 +31,7 @@ class SeuBot:
         self.command_manager = CommandManager(self.get_available_commands())
         self.command_handlers = {
             CommandState.QUIT: self.quit,
-            CommandState.PRESSED_A: self.light_show_wave,
-            CommandState.PRESSED_X: self.light_show_dance
+            CommandState.PRESSED_A: self.light_show_wave
         }
 
         self.last_health_check = 0
@@ -42,14 +41,15 @@ class SeuBot:
             start_web_server()
             self.check_admin_service()
 
-    def what_todo(self):
+    def what_todo(self):        
         if self.gamepad.is_connected():
             self.lights.get("controller_blue_light").on()
             self.motor_set.handle_commands()
             active_commands = self.command_manager.get_active_commands()
             for command_state in active_commands:
                 self.command_handlers[command_state]()
-        self.check_admin_service()
+        else:
+            self.lights.get("controller_blue_light").off()
 
     def check_admin_service(self):
         current_time = time()
@@ -76,12 +76,6 @@ class SeuBot:
             Command(
                 state=CommandState.PRESSED_A,
                 condition=lambda button=self.gamepad.get_buttons().A: (
-                    self.gamepad.getButtonState(int(button)) == 1
-                )
-            ),
-            Command(
-                state=CommandState.PRESSED_X,
-                condition=lambda button=self.gamepad.get_buttons().X: (
                     self.gamepad.getButtonState(int(button)) == 1
                 )
             )

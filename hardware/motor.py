@@ -75,22 +75,24 @@ class MotorSet:
             self.command_handlers[command_state]()
         
     def move_forward(self):
+        logger.debug("FORWARDS")
         self.right_motor.forward()
         self.left_motor.forward()
 
     def move_backward(self):
+        logger.debug("BACKWARDS")
         self.right_motor.backward()
         self.left_motor.backward()
 
     def turn_right(self):
+        logger.debug("RIGHT")
         self.left_motor.forward()
         self.right_motor.backward()
-        sleep(0.5)
 
     def turn_left(self):
+        logger.debug("LEFT")
         self.right_motor.forward()
         self.left_motor.backward()
-        sleep(0.5)
 
     def stop(self):
         self.right_motor.stop()
