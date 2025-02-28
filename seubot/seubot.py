@@ -4,8 +4,9 @@ from time import sleep, time
 import pygame
 from pygame.locals import QUIT
 from hardware import Controller, MotorSet, Light
+from hardware.camera import Camera
 from commands import Command, CommandState, CommandManager
-from admin import start_web_server, is_alive
+from admin import start_web_server
 from utils import get_config, Logger
 
 
@@ -25,8 +26,8 @@ class SeuBot:
         logger.info(("Hello! My name is " + self.name + ". :)"))
 
         self.gamepad = Controller()
-
         self.motor_set = MotorSet(self.gamepad)
+        self.camera = Camera()
 
         self.command_manager = CommandManager(self.get_available_commands())
         self.command_handlers = {
@@ -35,13 +36,12 @@ class SeuBot:
         }
 
         self.last_health_check = 0
-        self.health_check_interval = 5  # seconds
+        self.health_check_interval = 10  # seconds
 
         if config.get("enable_admin"):
             start_web_server()
-            self.check_admin_service()
 
-    def what_todo(self):        
+    def what_todo(self):
         if self.gamepad.is_connected():
             self.lights.get("controller_blue_light").on()
             self.motor_set.handle_commands()
@@ -108,3 +108,11 @@ class SeuBot:
                 # Forward wave
                 light.off()
                 sleep(0.3)
+
+    def start_camera(self):
+        self.camera.start_preview()
+        logger.info("Camera started")
+
+    def stop_camera(self):
+        self.camera.stop_preview()
+        logger.info("Camera stopped")
