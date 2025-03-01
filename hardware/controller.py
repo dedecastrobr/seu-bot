@@ -1,10 +1,15 @@
 import pygame
 from enum import IntEnum
+from utils import Logger, get_config
+
+logger = Logger(get_config().get("bot_logfile"))
 
 class Controller:
     def __init__(self): 
         try:
             pygame.joystick.init()
+            logger.info("Initialized Controller: {pygame.joystick.get_name}")
+
         except pygame.error as e:
             raise RuntimeError("Failed to initialize pygame joystick") from e
         self.joystick = None
