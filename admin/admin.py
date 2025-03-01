@@ -12,7 +12,6 @@ logger = Logger(get_config().get("admin_logfile"))
 app = FastAPI()
 
 admin_thread = None
-camera = Camera()
 
 # Model for config update
 class ConfigUpdate(BaseModel):
