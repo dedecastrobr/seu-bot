@@ -2,9 +2,9 @@ import os
 import sys
 from time import sleep, time
 import pygame
-from pygame.locals import QUIT
-from hardware import Controller, MotorSet, Light
-from commands import Command, CommandState, CommandManager
+from pygame.locals import *
+from admin.admin import is_alive
+from hardware import MotorSet, Light
 from admin import start_web_server
 from utils import get_config, Logger
 
@@ -16,6 +16,14 @@ class SeuBot:
 
     def __init__(self, name=config.get("bot_name")):
         pygame.init()
+        pygame.joystick.init()
+
+        joystick_count = pygame.joystick.get_count()
+        logger.info(f"Found {joystick_count} joystick(s)")
+        if joystick_count > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
+            logger.info(f"Initialized joystick: {self.joystick.get_name()}")
 
         lights_config = config.get("gpio").get("service_lights")      
         self.lights = self.initialize_lights(lights_config)
@@ -24,31 +32,54 @@ class SeuBot:
         self.name = name
         logger.info(("Hello! My name is " + self.name + ". :)"))
 
-        self.gamepad = Controller()
-        self.motor_set = MotorSet(self.gamepad)
-
-        self.command_manager = CommandManager(self.get_available_commands())
-        self.command_handlers = {
-            CommandState.QUIT: self.quit,
-
-
-        }
+        self.motor_set = MotorSet()
 
         self.last_health_check = 0
-        self.health_check_interval = 10  # seconds
+        self.health_check_interval = 10
 
         if config.get("enable_admin"):
             start_web_server()
 
-    def what_todo(self):
-        if self.gamepad.is_connected():
-            self.lights.get("controller_blue_light").on()
-            self.motor_set.handle_commands()
-            active_commands = self.command_manager.get_active_commands()
-            for command_state in active_commands:
-                self.command_handlers[command_state]()
-        else:
-            self.lights.get("controller_blue_light").off()
+    def what_todo(self, events):
+        for event in events:
+            logger.debug(f"Event: {event}")
+
+            if event.type == JOYDEVICEADDED:
+                logger.info(f"Joystick added!")
+                if not hasattr(self, 'joystick'):
+                    self.joystick = pygame.joystick.Joystick(0)
+                    self.joystick.init()
+                logger.info("Initialized Controller: " + self.joystick.get_name())
+
+            elif event.type == JOYDEVICEREMOVED:
+                logger.info(f"Joystick removed!")
+                if hasattr(self, 'joystick'):
+                    del self.joystick
+
+            elif event.type == JOYBUTTONDOWN and event.button == 11:
+                self.quit()
+
+            elif event.type == JOYBUTTONDOWN and event.button == 10:
+                self.restart()
+
+            elif event.type == JOYBUTTONDOWN and event.button == 7:
+                self.motor_set.move_forward()
+
+            elif event.type == JOYBUTTONDOWN and event.button == 6:
+                self.motor_set.move_forward()
+
+            elif event.type == JOYBUTTONUP and event.button in [6,7]:
+                self.motor_set.stop()
+
+            elif event.type == JOYAXISMOTION:
+                if event.axis == 0:
+                    if event.value > 0:
+                        self.motor_set.turn_right()
+                    elif event.value < 0:
+                        self.motor_set.turn_left()
+
+            elif event.type == KEYDOWN:
+                logger.info(f"KEYDOWN: {event.key}")
 
     def check_admin_service(self):
         current_time = time()
@@ -64,21 +95,6 @@ class SeuBot:
                 logger.error(f"Service health check error: {e}")
             self.last_health_check = current_time
 
-    def get_available_commands(self):
-        return [
-            Command(
-                state=CommandState.QUIT,
-                condition=lambda button=self.gamepad.get_buttons().R3: (
-                    self.gamepad.getButtonState(int(button)) == 1
-                )
-            ),
-            Command(
-                state=CommandState.PRESSED_A,
-                condition=lambda button=self.gamepad.get_buttons().A: (
-                    self.gamepad.getButtonState(int(button)) == 1
-                )
-            )
-        ]
     
     def initialize_lights(self, lights_config):
         lights = {}
@@ -87,10 +103,11 @@ class SeuBot:
         return lights
 
     def quit(self):
-        logger.info(("Quiting!"))
+        logger.info("Quiting! I hope to see you soon! Bye!")
         self.lights.get("seubot_green_light").off()
         sleep(0.5)
-        pygame.event.post(pygame.event.Event(QUIT))
+        pygame.quit()
+        sys.exit()
 
     def restart(self):
         logger.info("Restarting "+ self.name)

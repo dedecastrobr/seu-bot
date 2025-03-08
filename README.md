@@ -135,19 +135,12 @@ This example has 2 motors and 3 lights. You can add as much as you want.
 ## 🛠️ Implementing your own Bot
 
 [`SeuBot`](/seubot/seubot.py) class is in charge to manage the robot. 
-So from there, you will set your controller, setup motors and lights. 
+So from there, you will set your motors and lights. SeuBot also gets the events from the main thread and decides `what_todo()`, basically controling the associated hardware with the events comning from the controller.  
 
-Motors are actually defined as [`MotorSets`](/hardware/motor.py), in order to facilitate its control. So far we have a single MotorSet, but this class can be modified to accommodate as many motors as needed, by creating new sets. It has some default commands on it, but you can change if you want. 
+Motors are actually defined as [`MotorSets`](/hardware/motor.py), in order to facilitate its control. So far we have a single MotorSet, with left and right motors. 
 
-[`Light`](/hardware/light.py) can be either associated to commands or directly manipulated from other events like controller disconnection, battery levels or any other thing.
+[`Light`](/hardware/light.py) basically abstracts LED from gpiozero lib with its most basic operations.
 
-[`Commands`](/commands/commands.py) is used to manage controller inputs. They can be created "ad-hoc" along the code and are normally associated to a `CommandState`, one controller input (Button, Hat or Analog) and one callable action, usually a method from some hardware component. 
-It means basically, when the `CommandState` is satisfied, the action is called. 
-`Commands` keeps also a `CommandManager` to keep track of the active commands on each iteration and handle it accordingly. This is mostly on the `what_todo()` method from [`SeuBot`](/seubot/seubot.py) class.
-
-[`Controller`](/hardware/controller.py) is pretty straightforward and if you have a regular Bluetooth controller connected to the Raspberry Pi, it should work fine. Besides managing the controller connection it also keeps all hats, buttons and analogs and it's from where you get it when you create `Commands`. 
-
-This `Controller x Commands` logic surely has some room for improvement. It should be revisited at some point for making more simple to use. 
 
 ## 🚀 Usage
 
@@ -157,7 +150,7 @@ Once everything is set up, you can run the bot using the following command:
 python main.py
 ```
 
-This will start the bot and it will begin executing the commands as per your configuration.
+This will start the bot and it will begin executing it as per your configuration. If everything is fine you should be able to control it with the controller.
 
 ## 🤝 Contributing
 
@@ -165,4 +158,4 @@ Contributions are welcome! Feel free to open issues or submit pull requests to i
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+This project is licensed under the MIT License.
