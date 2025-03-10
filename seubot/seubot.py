@@ -63,18 +63,18 @@ class SeuBot:
                 self.motor_set.move_forward()
 
             elif event.type == JOYBUTTONDOWN and event.button == 6:
-                self.motor_set.move_forward()
+                self.motor_set.move_backward()
 
             elif event.type == JOYBUTTONUP and event.button in [6,7]:
                 self.motor_set.stop()
 
-            elif event.type == JOYAXISMOTION:
-                if event.axis == 0:
-                    if event.value > 0.5:
+            elif event.type == JOYHATMOTION:
+                if event.hat == 0:
+                    if event.value == (1, 0):
                         self.motor_set.turn_right()
-                    elif event.value < -0.5:
+                    elif event.value == (-1, 0):
                         self.motor_set.turn_left()
-                    elif -0.5 <= event.value <= 0.5:
+                    elif event.value == (0, 0):
                         self.motor_set.stop()
                             
 
