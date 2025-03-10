@@ -73,11 +73,11 @@ class SeuBot:
 
             elif event.type == JOYAXISMOTION:
                 if event.axis == 0:
-                    if event.value > 0.2:
+                    if event.value > 0.5:
                         self.motor_set.turn_right()
-                    elif event.value < -0.2:
+                    elif event.value < -0.5:
                         self.motor_set.turn_left()
-                    elif -0.2 <= event.value <= 0.2:
+                    elif -0.5 <= event.value <= 0.5:
                         self.motor_set.stop()
                             
 
