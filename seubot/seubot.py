@@ -25,17 +25,14 @@ class SeuBot:
             self.joystick.init()
             logger.info(f"Initialized joystick: {self.joystick.get_name()}")
 
-        lights_config = config.get("gpio").get("service_lights")      
-        self.lights = self.initialize_lights(lights_config)
-        self.lights.get("seubot_green_light").on()
-
         self.name = name
         logger.info(("Hello! My name is " + self.name + ". :)"))
 
         self.motor_set = MotorSet()
 
-        self.last_health_check = 0
-        self.health_check_interval = 10
+        lights_config = config.get("gpio").get("service_lights")      
+        self.lights = self.initialize_lights(lights_config)
+        self.lights.get("seubot_green_light").on()
 
         if config.get("enable_admin"):
             start_web_server()
