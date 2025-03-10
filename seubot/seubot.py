@@ -66,7 +66,8 @@ class SeuBot:
                 self.motor_set.move_backward()
 
             elif event.type == JOYBUTTONUP and event.button in [6,7]:
-                self.motor_set.stop()
+                if event.pool().type != JOYHATMOTION:
+                    self.motor_set.stop()
 
             elif event.type == JOYHATMOTION:
                 if event.hat == 0:
@@ -75,8 +76,8 @@ class SeuBot:
                     elif event.value == (-1, 0):
                         self.motor_set.turn_left()
                     elif event.value == (0, 0):
-                        self.motor_set.stop()
-                            
+                        if event.pool().type != JOYBUTTONDOWN:
+                            self.motor_set.stop()                
 
             elif event.type == KEYDOWN:
                 logger.info(f"KEYDOWN: {event.key}")
