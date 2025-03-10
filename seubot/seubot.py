@@ -76,6 +76,8 @@ class SeuBot:
                     elif event.value == (-1, 0):
                         self.motor_set.turn_left()
                     elif event.value == (0, 0):
+                        event_type = pygame.event.poll().type
+                        logger.debug(f"Event type: {event_type}")
                         if pygame.event.poll().type != JOYBUTTONDOWN:
                             self.motor_set.stop()                
 
