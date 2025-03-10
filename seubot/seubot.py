@@ -66,7 +66,7 @@ class SeuBot:
                 self.motor_set.move_backward()
 
             elif event.type == JOYBUTTONUP and event.button in [6,7]:
-                if event.pool().type != JOYHATMOTION:
+                if pygame.event.pool().type != JOYHATMOTION:
                     self.motor_set.stop()
 
             elif event.type == JOYHATMOTION:
@@ -76,7 +76,7 @@ class SeuBot:
                     elif event.value == (-1, 0):
                         self.motor_set.turn_left()
                     elif event.value == (0, 0):
-                        if event.pool().type != JOYBUTTONDOWN:
+                        if pygame.event.pool().type != JOYBUTTONDOWN:
                             self.motor_set.stop()                
 
             elif event.type == KEYDOWN:
