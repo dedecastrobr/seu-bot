@@ -77,6 +77,9 @@ class SeuBot:
                         self.motor_set.turn_right()
                     elif event.value < 0:
                         self.motor_set.turn_left()
+                    elif event.value == 0:
+                        self.motor_set.stop()
+                            
 
             elif event.type == KEYDOWN:
                 logger.info(f"KEYDOWN: {event.key}")
