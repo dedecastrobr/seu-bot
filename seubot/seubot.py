@@ -80,24 +80,6 @@ class SeuBot:
                         logger.debug(f"Event type: {event}")
                         if pygame.event.poll().type != JOYBUTTONDOWN:
                             self.motor_set.stop()                
-
-            elif event.type == KEYDOWN:
-                logger.info(f"KEYDOWN: {event.key}")
-
-    def check_admin_service(self):
-        current_time = time()
-        if current_time - self.last_health_check >= self.health_check_interval:
-            try:
-                service_light = self.lights.get("service_yellow_light")
-                admin_status = is_alive()
-                if admin_status:
-                    service_light.on()
-                else:
-                    service_light.off()
-            except Exception as e:
-                logger.error(f"Service health check error: {e}")
-            self.last_health_check = current_time
-
     
     def initialize_lights(self, lights_config):
         lights = {}
@@ -119,11 +101,9 @@ class SeuBot:
     def light_show_wave(self):
         for _ in range(3):
             for light in self.lights.values():
-                # Forward wave
                 light.on()
                 sleep(0.3)
             
             for light in self.lights.values():
-                # Forward wave
                 light.off()
                 sleep(0.3)

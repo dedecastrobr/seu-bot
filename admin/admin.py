@@ -4,7 +4,6 @@ import threading
 from time import sleep
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
 from utils import get_config, save_config, Logger
 
@@ -13,7 +12,6 @@ app = FastAPI()
 
 admin_thread = None
 
-# Model for config update
 class ConfigUpdate(BaseModel):
     new_config: dict
 
